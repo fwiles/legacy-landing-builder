@@ -1,8 +1,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Phone, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import BookingFormModal from "./BookingFormModal";
+import PhoneLink from "./PhoneLink";
 
 const HeroSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,11 +43,14 @@ const HeroSection = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <Button asChild size="lg" variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white">
-                <a href="tel:+19154975755">
-                  <Phone className="mr-2 h-5 w-5" /> Call Now
-                </a>
-              </Button>
+              <PhoneLink 
+                showIcon 
+                size="lg"
+                variant="outline"
+                className="border-navy text-navy hover:bg-navy hover:text-white"
+              >
+                Call Now
+              </PhoneLink>
               <Button 
                 size="lg" 
                 className="bg-navy text-white hover:bg-navy/90"

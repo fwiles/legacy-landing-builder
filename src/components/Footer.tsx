@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { Phone } from "lucide-react";
+import PhoneLink from "./PhoneLink";
 
 const Footer = () => {
   return (
@@ -15,11 +16,13 @@ const Footer = () => {
               Virtual consultations available. In-person meetings by appointment in El Paso.
             </p>
             <div className="mt-4">
-              <Button asChild variant="outline" size="sm" className="border-white bg-white text-navy hover:bg-navy hover:text-gold">
-                <a href="tel:+19154975755">
-                  <Phone className="mr-2 h-4 w-4" /> (915) 497-5755
-                </a>
-              </Button>
+              <PhoneLink 
+                showIcon 
+                variant="outline"
+                className="border-white bg-white text-navy hover:bg-navy hover:text-gold"
+                size="sm"
+                asButton={true}
+              />
             </div>
           </div>
           

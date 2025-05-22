@@ -1,8 +1,9 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Phone, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PhoneLink from "@/components/PhoneLink";
 
 const ThankYou = () => {
   const navigate = useNavigate();
@@ -55,13 +56,16 @@ const ThankYou = () => {
               Need to speak with someone right away?
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button asChild size="lg" variant="outline" className="border-navy bg-white text-navy hover:bg-navy hover:text-gold">
-                <a href="tel:+19154975755">
-                  <Phone className="mr-2 h-5 w-5" /> Call Now: (915) 497-5755
-                </a>
-              </Button>
-              <Button asChild size="lg" className="bg-navy text-white hover:bg-navy/90" onClick={() => navigate("/")}>
-                <a>
+              <PhoneLink 
+                showIcon 
+                size="lg"
+                variant="outline"
+                className="border-navy bg-white text-navy hover:bg-navy hover:text-gold"
+              >
+                Call Now
+              </PhoneLink>
+              <Button asChild size="lg" className="bg-navy text-white hover:bg-navy/90">
+                <a onClick={() => navigate("/")}>
                   <Calendar className="mr-2 h-5 w-5" /> Return to Homepage
                 </a>
               </Button>

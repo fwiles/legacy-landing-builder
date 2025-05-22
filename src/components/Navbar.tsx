@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Phone, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import BookingFormModal from "./BookingFormModal";
+import PhoneLink from "./PhoneLink";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -59,11 +60,13 @@ const Navbar = () => {
             ))}
             
             <div className="ml-4 flex items-center space-x-2">
-              <Button asChild size="sm" variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white">
-                <a href="tel:+19154975755">
-                  <Phone className="mr-1 h-4 w-4" /> Call Now
-                </a>
-              </Button>
+              <PhoneLink 
+                showIcon 
+                variant="outline" 
+                className="border-navy text-navy hover:bg-navy hover:text-white"
+              >
+                Call Now
+              </PhoneLink>
               <Button 
                 size="sm" 
                 className="bg-navy text-white hover:bg-navy/90"
@@ -115,11 +118,13 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col space-y-2 pt-2">
-                <Button asChild variant="outline" className="border-navy text-navy hover:bg-navy hover:text-white w-full">
-                  <a href="tel:+19154975755">
-                    <Phone className="mr-2 h-4 w-4" /> Call Now
-                  </a>
-                </Button>
+                <PhoneLink 
+                  showIcon
+                  variant="outline" 
+                  className="border-navy text-navy hover:bg-navy hover:text-white w-full"
+                >
+                  Call Now
+                </PhoneLink>
                 <Button 
                   className="bg-navy text-white hover:bg-navy/90 w-full"
                   onClick={() => {
