@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { memo } from "react";
 import { usePhoneNumber } from "@/contexts/PhoneNumberContext";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,8 @@ interface PhoneLinkProps {
   asButton?: boolean;
 }
 
-const PhoneLink = ({ 
+// Use memo to prevent unnecessary re-renders
+const PhoneLink = memo(({ 
   showIcon = false, 
   className = "", 
   variant = "outline", 
@@ -27,8 +28,8 @@ const PhoneLink = ({
     return (
       <Button asChild size={size} variant={variant} className={className}>
         <a href={phoneNumberHref}>
-          {showIcon && <Phone className="mr-1 h-4 w-4" />}
-          {children || `Call Now: ${phoneNumberFormatted}`}
+          {showIcon && <Phone className="mr-1 h-4 w-4" aria-hidden="true" />}
+          <span>{children || `Call Now: ${phoneNumberFormatted}`}</span>
         </a>
       </Button>
     );
@@ -36,10 +37,13 @@ const PhoneLink = ({
 
   return (
     <a href={phoneNumberHref} className={className}>
-      {showIcon && <Phone className="mr-1 h-4 w-4 inline" />}
-      {children || phoneNumberFormatted}
+      {showIcon && <Phone className="mr-1 h-4 w-4 inline" aria-hidden="true" />}
+      <span>{children || phoneNumberFormatted}</span>
     </a>
   );
-};
+});
+
+// Set display name for React DevTools
+PhoneLink.displayName = "PhoneLink";
 
 export default PhoneLink;

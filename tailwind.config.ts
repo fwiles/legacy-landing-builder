@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -10,6 +9,8 @@ export default {
     "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
+  // Use just-in-time mode for better performance
+  mode: "jit",
   theme: {
     container: {
       center: true,
@@ -100,5 +101,10 @@ export default {
       },
     },
   },
+  // Focus on used plugins only
   plugins: [require("tailwindcss-animate")],
+  // Add performance optimization configs
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
 } satisfies Config;

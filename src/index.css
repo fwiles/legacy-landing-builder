@@ -1,9 +1,20 @@
-
+/* Critical CSS for above-the-fold content */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 40 33% 98%;
+    --foreground: 222 47% 10%;
+    --primary: 205 45% 25%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 80 22% 65%;
+    --secondary-foreground: 222 47% 10%;
+    --radius: 0.5rem;
+  }
+  
+  /* Only add critical variables here, move others to a secondary CSS file */
   :root {
     --background: 40 33% 98%;
     --foreground: 222 47% 10%;
@@ -85,6 +96,7 @@
   }
 }
 
+/* Critical base styling */
 @layer base {
   * {
     @apply border-border;
@@ -100,12 +112,12 @@
   }
 }
 
-/* Styles for section anchors to account for fixed header */
+/* Critical component styles */
 @layer components {
   .section-anchor {
     scroll-margin-top: 5rem;
   }
-
+  
   .bullet-check {
     @apply flex items-start gap-2;
   }
