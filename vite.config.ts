@@ -35,11 +35,20 @@ export default defineConfig(({ mode }) => ({
     },
     rollupOptions: {
       output: {
-        // Split code into smaller chunks
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'router': ['react-router-dom'],
-          'ui-components': ['@/components/ui'],
+        // Use function form for manual chunks to work with splitVendorChunk
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('react-router-dom')) {
+              return 'router';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'radix-ui';
+            }
+            return 'vendor';
+          }
         },
       },
     },
