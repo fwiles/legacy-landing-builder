@@ -1,86 +1,91 @@
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type PhoneNumberContextType = {
-  phoneNumber: string;
+interface PhoneNumberContextType {
   phoneNumberFormatted: string;
   phoneNumberHref: string;
+}
+
+const PhoneNumberContext = createContext<PhoneNumberContextType | undefined>(undefined);
+
+export const usePhoneNumber = () => {
+  const context = useContext(PhoneNumberContext);
+  if (context === undefined) {
+    throw new Error('usePhoneNumber must be used within a PhoneNumberProvider');
+  }
+  return context;
 };
 
-const DEFAULT_PHONE = "9154975755";
-const DEFAULT_PHONE_FORMATTED = "(915) 497-5755";
-const DEFAULT_PHONE_HREF = "tel:+19154975755";
+interface PhoneNumberProviderProps {
+  children: ReactNode;
+}
 
-const PhoneNumberContext = createContext<PhoneNumberContextType>({
-  phoneNumber: DEFAULT_PHONE,
-  phoneNumberFormatted: DEFAULT_PHONE_FORMATTED,
-  phoneNumberHref: DEFAULT_PHONE_HREF,
-});
-
-export const usePhoneNumber = () => useContext(PhoneNumberContext);
-
-export const PhoneNumberProvider = ({ children }: { children: React.ReactNode }) => {
-  const [phoneNumber, setPhoneNumber] = useState(DEFAULT_PHONE);
-  const [phoneNumberFormatted, setPhoneNumberFormatted] = useState(DEFAULT_PHONE_FORMATTED);
-  const [phoneNumberHref, setPhoneNumberHref] = useState(DEFAULT_PHONE_HREF);
-
-  // Define the update callback outside useEffect for better performance
-  const updatePhoneNumber = useCallback((newPhoneHref: string) => {
-    const newPhone = newPhoneHref.replace(/\D/g, "").replace(/^1/, "");
-    
-    if (newPhone && newPhone !== phoneNumber && newPhone.length >= 10) {
-      // Format the phone number for display
-      const formatted = newPhone.replace(
-        /(\d{3})(\d{3})(\d{4})/,
-        "($1) $2-$3"
-      );
-      
-      setPhoneNumber(newPhone);
-      setPhoneNumberFormatted(formatted);
-      setPhoneNumberHref(newPhoneHref);
-    }
-  }, [phoneNumber]);
+export const PhoneNumberProvider: React.FC<PhoneNumberProviderProps> = ({ children }) => {
+  const [phoneNumberFormatted, setPhoneNumberFormatted] = useState('(720) 295-8600');
+  const [phoneNumberHref, setPhoneNumberHref] = useState('tel:+17202958600');
 
   useEffect(() => {
-    // Use a more targeted MutationObserver with better performance
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type !== "attributes" || mutation.attributeName !== "href") continue;
-        
-        const target = mutation.target as HTMLAnchorElement;
-        if (target?.href?.startsWith("tel:")) {
-          updatePhoneNumber(target.href);
-          // Once found, we can disconnect to save resources
-          break;
+    // Function to extract phone number from call tracking script changes
+    const extractPhoneNumber = () => {
+      // Look for phone number links that might be modified by call tracking
+      const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
+      
+      if (phoneLinks.length > 0) {
+        const firstLink = phoneLinks[0] as HTMLAnchorElement;
+        if (firstLink.href && firstLink.textContent) {
+          const href = firstLink.href;
+          const text = firstLink.textContent.trim();
+          
+          // Only update if it's different from current state
+          if (href !== phoneNumberHref || text !== phoneNumberFormatted) {
+            setPhoneNumberHref(href);
+            setPhoneNumberFormatted(text);
+            console.log('Phone number updated:', { text, href });
+          }
         }
       }
+    };
+
+    // Create a MutationObserver to watch for changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' || mutation.type === 'attributes') {
+          // Debounce the extraction to avoid excessive calls
+          setTimeout(extractPhoneNumber, 100);
+        }
+      });
     });
 
-    // More specific targeting using document.querySelectorAll
-    const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
-    phoneLinks.forEach(link => {
-      if (link.href && link.href !== phoneNumberHref) {
-        updatePhoneNumber(link.href);
-      }
-      observer.observe(link, { attributes: true, attributeFilter: ["href"] });
-    });
-
-    // If no links found initially, observe document body
-    if (phoneLinks.length === 0) {
+    // Start observing after a short delay to allow call tracking to load
+    const timeoutId = setTimeout(() => {
       observer.observe(document.body, {
-        attributes: true,
         childList: true,
         subtree: true,
-        attributeFilter: ["href"]
+        attributes: true,
+        attributeFilter: ['href']
       });
-    }
+      
+      // Initial extraction
+      extractPhoneNumber();
+    }, 2000);
 
-    // Clean up observer when component unmounts
-    return () => observer.disconnect();
-  }, [updatePhoneNumber, phoneNumberHref]);
+    // Periodic check as fallback
+    const intervalId = setInterval(extractPhoneNumber, 5000);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+      observer.disconnect();
+    };
+  }, [phoneNumberHref, phoneNumberFormatted]);
+
+  const value = {
+    phoneNumberFormatted,
+    phoneNumberHref,
+  };
 
   return (
-    <PhoneNumberContext.Provider value={{ phoneNumber, phoneNumberFormatted, phoneNumberHref }}>
+    <PhoneNumberContext.Provider value={value}>
       {children}
     </PhoneNumberContext.Provider>
   );
