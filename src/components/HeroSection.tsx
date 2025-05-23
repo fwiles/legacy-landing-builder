@@ -62,7 +62,7 @@ const HeroSection = () => {
           </div>
           
           <div className="rounded-lg overflow-hidden shadow-lg bg-white p-2">
-            <img alt="Attorney at Carter Legacy Planning" className="w-full h-auto rounded object-cover" src="/lovable-uploads/4832d621-8768-407e-87ff-0dda632657c8.jpg" />
+            <img alt="Attorney at Carter Legacy Planning" className="w-full h-auto rounded object-cover" src="/lovable-uploads/1bdcae98-6389-4c2e-b4bd-869453bfd29f.png" />
           </div>
         </div>
       </div>
