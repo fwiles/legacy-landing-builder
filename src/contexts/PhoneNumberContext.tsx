@@ -1,91 +1,72 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-interface PhoneNumberContextType {
+type PhoneNumberContextType = {
+  phoneNumber: string;
   phoneNumberFormatted: string;
   phoneNumberHref: string;
-}
-
-const PhoneNumberContext = createContext<PhoneNumberContextType | undefined>(undefined);
-
-export const usePhoneNumber = () => {
-  const context = useContext(PhoneNumberContext);
-  if (context === undefined) {
-    throw new Error('usePhoneNumber must be used within a PhoneNumberProvider');
-  }
-  return context;
 };
 
-interface PhoneNumberProviderProps {
-  children: ReactNode;
-}
+const DEFAULT_PHONE = "9154975755";
+const DEFAULT_PHONE_FORMATTED = "(915) 497-5755";
+const DEFAULT_PHONE_HREF = "tel:+19154975755";
 
-export const PhoneNumberProvider: React.FC<PhoneNumberProviderProps> = ({ children }) => {
-  const [phoneNumberFormatted, setPhoneNumberFormatted] = useState('(720) 295-8600');
-  const [phoneNumberHref, setPhoneNumberHref] = useState('tel:+17202958600');
+const PhoneNumberContext = createContext<PhoneNumberContextType>({
+  phoneNumber: DEFAULT_PHONE,
+  phoneNumberFormatted: DEFAULT_PHONE_FORMATTED,
+  phoneNumberHref: DEFAULT_PHONE_HREF,
+});
+
+export const usePhoneNumber = () => useContext(PhoneNumberContext);
+
+export const PhoneNumberProvider = ({ children }: { children: React.ReactNode }) => {
+  const [phoneNumber, setPhoneNumber] = useState(DEFAULT_PHONE);
+  const [phoneNumberFormatted, setPhoneNumberFormatted] = useState(DEFAULT_PHONE_FORMATTED);
+  const [phoneNumberHref, setPhoneNumberHref] = useState(DEFAULT_PHONE_HREF);
 
   useEffect(() => {
-    // Function to extract phone number from call tracking script changes
-    const extractPhoneNumber = () => {
-      // Look for phone number links that might be modified by call tracking
-      const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
-      
-      if (phoneLinks.length > 0) {
-        const firstLink = phoneLinks[0] as HTMLAnchorElement;
-        if (firstLink.href && firstLink.textContent) {
-          const href = firstLink.href;
-          const text = firstLink.textContent.trim();
-          
-          // Only update if it's different from current state
-          if (href !== phoneNumberHref || text !== phoneNumberFormatted) {
-            setPhoneNumberHref(href);
-            setPhoneNumberFormatted(text);
-            console.log('Phone number updated:', { text, href });
-          }
-        }
-      }
-    };
-
-    // Create a MutationObserver to watch for changes
+    // Wait for the call tracking script to modify the DOM
     const observer = new MutationObserver((mutations) => {
+      // Look for changes to anchor elements with href starting with "tel:"
       mutations.forEach((mutation) => {
-        if (mutation.type === 'childList' || mutation.type === 'attributes') {
-          // Debounce the extraction to avoid excessive calls
-          setTimeout(extractPhoneNumber, 100);
+        if (mutation.type === "attributes" && mutation.attributeName === "href") {
+          const target = mutation.target as HTMLAnchorElement;
+          if (target.href && target.href.startsWith("tel:")) {
+            const newPhoneHref = target.href;
+            const newPhone = newPhoneHref.replace(/\D/g, "").replace(/^1/, ""); // Remove non-digits and leading 1
+            
+            if (newPhone && newPhone !== phoneNumber && newPhone.length >= 10) {
+              console.log("Phone number changed by tracking script:", newPhone);
+              
+              // Format the phone number for display
+              const formatted = newPhone.replace(
+                /(\d{3})(\d{3})(\d{4})/,
+                "($1) $2-$3"
+              );
+              
+              setPhoneNumber(newPhone);
+              setPhoneNumberFormatted(formatted);
+              setPhoneNumberHref(newPhoneHref);
+            }
+          }
         }
       });
     });
 
-    // Start observing after a short delay to allow call tracking to load
-    const timeoutId = setTimeout(() => {
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['href']
-      });
-      
-      // Initial extraction
-      extractPhoneNumber();
-    }, 2000);
+    // Start observing the document with configured parameters
+    observer.observe(document.body, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+      attributeFilter: ["href"]
+    });
 
-    // Periodic check as fallback
-    const intervalId = setInterval(extractPhoneNumber, 5000);
-
-    return () => {
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
-      observer.disconnect();
-    };
-  }, [phoneNumberHref, phoneNumberFormatted]);
-
-  const value = {
-    phoneNumberFormatted,
-    phoneNumberHref,
-  };
+    // Clean up observer when component unmounts
+    return () => observer.disconnect();
+  }, [phoneNumber]);
 
   return (
-    <PhoneNumberContext.Provider value={value}>
+    <PhoneNumberContext.Provider value={{ phoneNumber, phoneNumberFormatted, phoneNumberHref }}>
       {children}
     </PhoneNumberContext.Provider>
   );
